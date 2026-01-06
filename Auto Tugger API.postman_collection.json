@@ -81,7 +81,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": ""
+          "raw": "http://172.16.78.134:62205/api/Amr/ReleaseAmr"
         },
         "description": "just put number of AGV to release the car, example:\n\n1  \nthe car with ID number 1 will release if there are no task still running"
       },
@@ -94,7 +94,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": ""
+          "raw": "http://172.16.78.134:62205/api/Amr/GetOrderMsg"
         }
       },
       "response": []
