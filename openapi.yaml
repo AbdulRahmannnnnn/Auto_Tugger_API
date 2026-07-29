@@ -1,0 +1,228 @@
+openapi: 3.0.3
+
+info:
+  title: Auto Tugger API
+  description: REST API for Auto Tugger / AMR Fleet Management
+  version: 1.0.0
+
+servers:
+  - url: http://172.16.78.134:62205
+
+tags:
+  - name: AMR
+    description: Auto Tugger APIs
+
+paths:
+
+  /api/Amr/MoveAmrToStation:
+    post:
+      tags:
+        - AMR
+      summary: Move AMR to Station
+      description: Send an AMR to a specified station.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveToStationRequest'
+            example:
+              OrderID: Abdul-1710000000
+              Priority: 0
+              DesignatedCarrier: 1
+              TargetStation: 60
+              Operations:
+                - OperationCode: 1
+                  Parameter1: 0
+                  Parameter2: 0
+                  Parameter3: 0
+                  ExecutionType: 2
+              PermanentFlag: false
+      responses:
+        '200':
+          description: Success
+
+  /api/Amr/MoveAmrToNode:
+    post:
+      tags:
+        - AMR
+      summary: Move AMR to Node
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveToNodeRequest'
+      responses:
+        '200':
+          description: Success
+
+  /api/Amr/AddOrder:
+    post:
+      tags:
+        - AMR
+      summary: Add Order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrderRequest'
+      responses:
+        '200':
+          description: Success
+
+  /api/Amr/CancelOrder:
+    get:
+      tags:
+        - AMR
+      summary: Cancel Order
+      description: Cancel an existing order.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelOrderRequest'
+      responses:
+        '200':
+          description: Success
+
+  /api/Amr/GetExecutingOrders:
+    get:
+      tags:
+        - AMR
+      summary: Get Executing Orders
+      responses:
+        '200':
+          description: List of executing orders
+
+  /api/Amr/GetOrderMsg:
+    get:
+      tags:
+        - AMR
+      summary: Get Order Message
+      responses:
+        '200':
+          description: Success
+
+  /api/Amr/GetAmrMsg:
+    get:
+      tags:
+        - AMR
+      summary: Get AMR Message
+      responses:
+        '200':
+          description: Success
+
+  /api/Amr/GetAmrMsgMPL:
+    get:
+      tags:
+        - AMR
+      summary: Get AMR Message MPL
+      responses:
+        '200':
+          description: Success
+
+  /api/Amr/ReleaseAmr:
+    get:
+      tags:
+        - AMR
+      summary: Release AMR
+      description: Release AGV if no task is running.
+      parameters:
+        - in: query
+          name: carrierId
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Success
+
+components:
+
+  schemas:
+
+    Operation:
+      type: object
+      properties:
+        OperationCode:
+          type: integer
+        Parameter1:
+          type: integer
+        Parameter2:
+          type: integer
+        Parameter3:
+          type: integer
+        ExecutionType:
+          type: integer
+
+    MoveToStationRequest:
+      type: object
+      properties:
+        OrderID:
+          type: string
+        Priority:
+          type: integer
+        DesignatedCarrier:
+          type: integer
+        TargetStation:
+          type: integer
+        Operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+        PermanentFlag:
+          type: boolean
+
+    MoveToNodeRequest:
+      type: object
+      properties:
+        OrderID:
+          type: string
+        Priority:
+          type: integer
+        DesignatedCarrier:
+          type: integer
+        TargetNode:
+          type: integer
+        Operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+        PermanentFlag:
+          type: boolean
+
+    AddOrderRequest:
+      type: object
+      properties:
+        OrderID:
+          type: string
+        CarrierID:
+          type: integer
+        CarrierType:
+          type: integer
+        TargetNode:
+          type: integer
+        TargetStation:
+          type: integer
+        Priority:
+          type: integer
+        ReplyUrl:
+          type: string
+        PermanentFlag:
+          type: boolean
+        Operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+
+    CancelOrderRequest:
+      type: object
+      properties:
+        orderID:
+          type: string
+        releaseFlag:
+          type: boolean
