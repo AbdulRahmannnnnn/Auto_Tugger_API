@@ -1,3 +1,62 @@
+# Konfigurasi Redocly CLI untuk Auto Tugger AMR/AGV Control API
+#
+# Perintah yang sering dipakai:
+#   npx @redocly/cli preview-docs auto-tugger@v1   -> preview dengan live reload
+#   npx @redocly/cli build-docs   auto-tugger@v1   -> build HTML statis ke dist/
+#   npx @redocly/cli lint         auto-tugger@v1   -> cek kualitas spec
+#   npx @redocly/cli bundle       auto-tugger@v1   -> gabung jadi satu file di dist/
+
 apis:
-  main:
-    root: openapi.yaml
+  auto-tugger@v1:
+    root: ./openapi.yaml
+    output: ./dist/openapi.yaml
+
+extends:
+  - recommended
+
+rules:
+  # --- Aturan yang sengaja dimatikan, beserta alasannya ---
+
+  # Dokumentasi asli tidak mendefinisikan response error HTTP sama sekali.
+  # API ini selalu balas HTTP 200 dan menaruh status sebenarnya di field
+  # `resCode` pada body (0 = sukses, selain 0 = gagal).
+  operation-4xx-response: off
+
+  # Tidak ada skema autentikasi pada dokumentasi asli (server RCS lokal).
+  # Nyalakan lagi kalau nanti API ini dipasang di belakang gateway/auth.
+  security-defined: off
+
+  # Skema hasil "decode" (ResDataModel, OrderMsgMPL, AmrMsgParamAll) hanya
+  # ditunjuk lewat extension `x-decoded-schema`, bukan lewat $ref biasa,
+  # karena `resData` aktualnya dikirim sebagai string JSON. Linter tidak bisa
+  # menelusuri extension, jadi skema itu salah terbaca sebagai tidak terpakai.
+  no-unused-components: off
+
+  # API internal, tidak dipublikasikan -> tidak perlu blok lisensi.
+  info-license: off
+
+  # Server RCS memang berjalan di localhost sesuai dokumentasi asli.
+  no-server-example.com: off
+
+  # --- Aturan yang dinaikkan jadi error ---
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-summary: error
+  operation-description: error
+  path-params-defined: error
+  no-identical-paths: error
+  # Nama rule ini adalah `spec` pada Redocly CLI v1, dan `struct` pada v2+.
+  struct: error
+
+  # --- Turun jadi peringatan ---
+  no-server-trailing-slash: warn
+
+# Opsi Redoc. Tampilan sengaja dibiarkan default (tanpa override warna/font).
+# Catatan versi: pada Redocly CLI v2+ blok ini berada di root dengan key `openapi`.
+# Pada CLI v1 blok yang sama diletakkan di bawah `theme:` -> `openapi:`.
+openapi:
+  expandResponses: '200'
+  jsonSampleExpandLevel: 3
+  requiredPropsFirst: true
+  hideDownloadButton: false
+  sortTagsAlphabetically: false
