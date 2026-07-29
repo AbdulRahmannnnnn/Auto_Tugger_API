@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,7 +7,7 @@
   <style>
     body { margin: 0; padding: 0; }
 
-    /* Hanya muncul kalau spesifikasi gagal dimuat. */
+    /* Shown only when the specification fails to load. */
     .notice {
       display: none;
       margin: 60px auto;
@@ -38,23 +38,23 @@
 <body>
 
   <div class="notice" id="notice-file">
-    <h2>Jalankan lewat server lokal</h2>
+    <h2>Serve this page over HTTP</h2>
     <p>
-      Halaman ini dibuka langsung dari sistem berkas (<code>file://</code>), sehingga browser
-      memblokir pembacaan <code>openapi.yaml</code>. Jalankan server statis dari folder yang
-      sama, lalu buka alamat yang muncul:
+      This page was opened straight from the file system (<code>file://</code>), so the
+      browser blocks it from reading <code>openapi.yaml</code>. Start a static server from
+      the same folder, then open the address it prints:
     </p>
     <pre><code>npx serve .
-# atau
+# or
 python3 -m http.server 8080</code></pre>
   </div>
 
   <div class="notice" id="notice-error">
-    <h2>Spesifikasi tidak bisa dimuat</h2>
+    <h2>The specification could not be loaded</h2>
     <p id="error-detail"></p>
     <p>
-      Pastikan <code>openapi.yaml</code> berada di folder yang sama dengan
-      <code>index.html</code> dan bisa diakses dari server yang sedang berjalan.
+      Check that <code>openapi.yaml</code> sits in the same folder as
+      <code>index.html</code> and is reachable from the server that is running.
     </p>
   </div>
 
@@ -69,14 +69,14 @@ python3 -m http.server 8080</code></pre>
         el.setAttribute('data-show', '');
       }
 
-      // Dibuka lewat file:// — fetch pasti diblokir browser, hentikan lebih awal.
+      // Opened over file:// — the browser will block the fetch, so stop early.
       if (window.location.protocol === 'file:') {
         show('notice-file');
         return;
       }
 
       if (typeof Redoc === 'undefined') {
-        show('notice-error', 'Skrip Redoc gagal dimuat dari CDN. Periksa koneksi internet.');
+        show('notice-error', 'Redoc failed to load from the CDN. Check your internet connection.');
         return;
       }
 
@@ -89,7 +89,7 @@ python3 -m http.server 8080</code></pre>
         },
         document.getElementById('redoc'),
         function (err) {
-          if (err) show('notice-error', 'Gagal membaca openapi.yaml: ' + (err.message || err));
+          if (err) show('notice-error', 'Could not read openapi.yaml: ' + (err.message || err));
         }
       );
     })();
