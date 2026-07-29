@@ -51,7 +51,7 @@ paths:
     post:
       operationId: moveAmrToStation
       tags: [Movement]
-      summary: Kirim kendaraan tertentu ke station aktif tertentu
+      summary: Kirim kendaraan ke station
       description: >
         Mengirim satu kendaraan (ditentukan lewat DesignatedCarrier) menuju sebuah
         station aktif (TargetStation) beserta daftar operasi yang harus dijalankan
@@ -92,7 +92,7 @@ paths:
     post:
       operationId: moveAmrToNode
       tags: [Movement]
-      summary: Kirim kendaraan tertentu ke node navigasi tertentu
+      summary: Kirim kendaraan ke node
       description: >
         Mengirim satu kendaraan (DesignatedCarrier) menuju sebuah node navigasi
         (TargetNode) beserta daftar operasi yang harus dijalankan.
@@ -132,7 +132,11 @@ paths:
     get:
       operationId: releaseAmr
       tags: [Movement]
-      summary: Melepas (release) kendaraan tertentu dari alokasi/lock saat ini
+      summary: Lepas kendaraan
+      description: >
+        Melepaskan kendaraan dari status teralokasi/terkunci sehingga bisa
+        dipakai untuk tugas berikutnya. Berguna saat kendaraan tersangkut pada
+        order yang sudah tidak relevan.
       parameters:
         - name: carrierID
           in: query
@@ -162,7 +166,10 @@ paths:
     get:
       operationId: getOrderMsg
       tags: [Order]
-      summary: Mendapatkan informasi satu tugas/order tertentu berdasarkan OrderID
+      summary: Detail order
+      description: >
+        Mengembalikan detail satu order: kendaraan yang mengerjakan, node/station
+        tujuan, prioritas, status terkini, waktu pembuatan, dan daftar operasinya.
       parameters:
         - name: orderID
           in: query
@@ -194,8 +201,10 @@ paths:
     get:
       operationId: getExecutingOrders
       tags: [Order]
-      summary: Mendapatkan seluruh tugas/order yang sedang dalam status eksekusi
-      description: Tidak memerlukan parameter.
+      summary: Daftar order berjalan
+      description: >
+        Mengembalikan seluruh order yang sedang dalam status eksekusi beserta
+        kendaraan, tujuan, dan status masing-masing. Tidak memerlukan parameter.
       responses:
         '200':
           description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
@@ -224,7 +233,7 @@ paths:
     post:
       operationId: addOrder
       tags: [Order]
-      summary: Menambahkan tugas/order baru
+      summary: Tambah order
       description: >
         Membuat order baru untuk kendaraan tertentu (via CarrierID) atau untuk tipe
         kendaraan tertentu (via CarrierType) menuju node/station tujuan.
@@ -267,7 +276,10 @@ paths:
     post:
       operationId: cancelOrder
       tags: [Order]
-      summary: Membatalkan tugas/order yang sudah ada
+      summary: Batalkan order
+      description: >
+        Membatalkan order berdasarkan OrderID. Lewat `releaseFlag`, kendaraan yang
+        mengerjakan order tersebut bisa sekaligus dilepas pada operasi yang sama.
       requestBody:
         required: true
         content:
@@ -295,7 +307,7 @@ paths:
     get:
       operationId: getAmrMsg
       tags: [Vehicle]
-      summary: Mendapatkan seluruh informasi telemetri satu kendaraan tertentu
+      summary: Info satu kendaraan
       description: >
         Mengembalikan seluruh informasi kendaraan: alarm, baterai, koneksi,
         koordinat, lokasi, peta, kecepatan, status, order, traffic, rencana
@@ -321,7 +333,7 @@ paths:
     get:
       operationId: getAmrMsgMPL
       tags: [Vehicle]
-      summary: Mendapatkan informasi telemetri seluruh kendaraan
+      summary: Info semua kendaraan
       description: Tidak memerlukan parameter. Mengembalikan daftar AmrMsgParam untuk semua kendaraan.
       responses:
         '200':
@@ -514,9 +526,14 @@ components:
         Priority:
           type: integer
           format: int32
-          minimum: 1
+          minimum: 0
           maximum: 5
-          description: Prioritas (1-5). Semakin besar nilainya, semakin tinggi prioritasnya.
+          description: >
+            Prioritas order. Semakin besar nilainya, semakin tinggi prioritasnya.
+            Tabel dokumentasi asli menyebut rentang 1-5, namun contoh request resmi
+            untuk MoveAmrToStation dan MoveAmrToNode memakai nilai 0 — tampaknya
+            berarti "prioritas default / tidak diatur". Batas bawah di spec ini
+            dilonggarkan ke 0 agar contoh resmi tetap lolos validasi.
         DesignatedCarrier:
           type: integer
           format: int32
@@ -548,9 +565,14 @@ components:
         Priority:
           type: integer
           format: int32
-          minimum: 1
+          minimum: 0
           maximum: 5
-          description: Prioritas (1-5). Semakin besar nilainya, semakin tinggi prioritasnya.
+          description: >
+            Prioritas order. Semakin besar nilainya, semakin tinggi prioritasnya.
+            Tabel dokumentasi asli menyebut rentang 1-5, namun contoh request resmi
+            untuk MoveAmrToStation dan MoveAmrToNode memakai nilai 0 — tampaknya
+            berarti "prioritas default / tidak diatur". Batas bawah di spec ini
+            dilonggarkan ke 0 agar contoh resmi tetap lolos validasi.
         DesignatedCarrier:
           type: integer
           format: int32
@@ -602,9 +624,14 @@ components:
         Priority:
           type: integer
           format: int32
-          minimum: 1
+          minimum: 0
           maximum: 5
-          description: Prioritas (1-5). Semakin besar nilainya, semakin tinggi prioritasnya.
+          description: >
+            Prioritas order. Semakin besar nilainya, semakin tinggi prioritasnya.
+            Tabel dokumentasi asli menyebut rentang 1-5, namun contoh request resmi
+            untuk MoveAmrToStation dan MoveAmrToNode memakai nilai 0 — tampaknya
+            berarti "prioritas default / tidak diatur". Batas bawah di spec ini
+            dilonggarkan ke 0 agar contoh resmi tetap lolos validasi.
         Operations:
           type: array
           description: Daftar operasi yang dijalankan setelah kendaraan tiba di tujuan.
