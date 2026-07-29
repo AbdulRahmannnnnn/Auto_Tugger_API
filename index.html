@@ -1,22 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auto Tugger AMR/AGV Control API</title>
+  <style>
+    body { margin: 0; padding: 0; }
 
-  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    /* Hanya muncul kalau spesifikasi gagal dimuat. */
+    .notice {
+      display: none;
+      margin: 60px auto;
+      max-width: 600px;
+      padding: 24px 28px;
+      border: 1px solid #e0e0e0;
+      border-left: 4px solid #d4a017;
+      border-radius: 3px;
+      font-family: Roboto, system-ui, -apple-system, sans-serif;
+      color: #333;
+      line-height: 1.6;
+    }
+    .notice[data-show] { display: block; }
+    .notice h2 { margin: 0 0 12px; font-size: 19px; }
+    .notice p  { margin: 0 0 14px; }
+    .notice p:last-child { margin-bottom: 0; }
+    .notice pre {
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      background: #f5f5f5;
+      border-radius: 3px;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+    .notice code { font-family: Courier, monospace; }
+  </style>
 </head>
-
 <body>
 
-<div id="redoc-container"></div>
+  <div class="notice" id="notice-file">
+    <h2>Jalankan lewat server lokal</h2>
+    <p>
+      Halaman ini dibuka langsung dari sistem berkas (<code>file://</code>), sehingga browser
+      memblokir pembacaan <code>openapi.yaml</code>. Jalankan server statis dari folder yang
+      sama, lalu buka alamat yang muncul:
+    </p>
+    <pre><code>npx serve .
+# atau
+python3 -m http.server 8080</code></pre>
+  </div>
 
-<script>
-Redoc.init(
-    "openapi.yaml",
-    {},
-    document.getElementById("redoc-container")
-);
-</script>
+  <div class="notice" id="notice-error">
+    <h2>Spesifikasi tidak bisa dimuat</h2>
+    <p id="error-detail"></p>
+    <p>
+      Pastikan <code>openapi.yaml</code> berada di folder yang sama dengan
+      <code>index.html</code> dan bisa diakses dari server yang sedang berjalan.
+    </p>
+  </div>
 
+  <div id="redoc"></div>
+
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+  <script>
+    (function () {
+      function show(id, text) {
+        var el = document.getElementById(id);
+        if (text) document.getElementById('error-detail').textContent = text;
+        el.setAttribute('data-show', '');
+      }
+
+      // Dibuka lewat file:// — fetch pasti diblokir browser, hentikan lebih awal.
+      if (window.location.protocol === 'file:') {
+        show('notice-file');
+        return;
+      }
+
+      if (typeof Redoc === 'undefined') {
+        show('notice-error', 'Skrip Redoc gagal dimuat dari CDN. Periksa koneksi internet.');
+        return;
+      }
+
+      Redoc.init(
+        'openapi.yaml',
+        {
+          expandResponses: '200',
+          jsonSampleExpandLevel: 3,
+          requiredPropsFirst: true
+        },
+        document.getElementById('redoc'),
+        function (err) {
+          if (err) show('notice-error', 'Gagal membaca openapi.yaml: ' + (err.message || err));
+        }
+      );
+    })();
+  </script>
 </body>
 </html>
