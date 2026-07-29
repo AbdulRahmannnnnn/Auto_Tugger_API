@@ -1,228 +1,1395 @@
 openapi: 3.0.3
-
 info:
-  title: Auto Tugger API
-  description: REST API for Auto Tugger / AMR Fleet Management
-  version: 1.0.0
+  title: Auto Tugger AMR/AGV Control API
+  description: |
+    API untuk mengontrol dan memonitor armada AMR/AGV (Auto Tugger) — mengirim tugas
+    (order) ke kendaraan, memantau status kendaraan, dan mengelola siklus hidup tugas
+    (create/cancel/query).
 
+    ## Catatan penting hasil pemeriksaan dokumentasi asli
+
+    1. **`resData` bertipe string, bukan object.** Di semua contoh response pada
+       dokumentasi asli, `resData` selalu berupa JSON yang di-*stringify* ulang
+       (escaped), contoh: `"resData": "{\"ExecResult\":true,...}"`. Ini berarti
+       client HARUS melakukan `JSON.parse()` sekali lagi terhadap isi `resData`
+       untuk mendapatkan object aslinya. Skema "bentuk asli setelah di-parse" tetap
+       didefinisikan di `components.schemas` dan direferensikan lewat extension
+       `x-decoded-schema` pada tiap response untuk dokumentasi/codegen.
+    2. **Casing field terakhir tidak konsisten.** Tabel field pada dokumentasi
+       menuliskan `resTime` (huruf kecil), tetapi SEMUA contoh JSON respons aktual
+       menggunakan `ResTime` (huruf besar). Spec ini mengikuti contoh JSON aktual
+       (`ResTime`) karena itu yang benar-benar dikirim server.
+    3. **Typo pada `AmrMotorMsg`.** Field `MotorCurrent4` s.d. `MotorCurrent8` pada
+       tabel dokumentasi muncul di contoh JSON aktual sebagai `MotorCurren4` s.d.
+       `MotorCurren8` (huruf "t" hilang). Spec ini mengikuti nama field pada contoh
+       JSON aktual karena itu yang benar-benar dikembalikan server.
+    4. **Typo pada `AmrScanMsg`.** Tabel dokumentasi menulis `DataConent`, tetapi
+       contoh JSON aktual menggunakan `DataContent` (ejaan benar). Spec ini
+       mengikuti contoh JSON aktual.
+    5. Untuk endpoint `GET` dengan satu parameter (`ReleaseAmr`, `GetOrderMsg`,
+       `GetAmrMsg`), contoh request pada dokumentasi hanya menuliskan nilai mentah
+       (mis. `1` atau `"26010305"`), bukan format query string eksplisit. Spec ini
+       memodelkannya sebagai query parameter (`?carrierID=1`, dll.) sebagai
+       interpretasi paling umum untuk endpoint GET dengan parameter tunggal —
+       sesuaikan bila implementasi aktual berbeda (mis. route parameter atau raw
+       body).
+  version: "1.0.0"
 servers:
-  - url: http://172.16.78.134:62205
+  - url: http://localhost:62205
+    description: Server RCS (Robot Control System) lokal
 
 tags:
-  - name: AMR
-    description: Auto Tugger APIs
+  - name: Order
+    description: Manajemen tugas/order untuk kendaraan (create, cancel, query)
+  - name: Movement
+    description: Perintah pergerakan langsung ke kendaraan tertentu
+  - name: Vehicle
+    description: Informasi status dan telemetri kendaraan (AMR/AGV)
 
 paths:
-
   /api/Amr/MoveAmrToStation:
     post:
-      tags:
-        - AMR
-      summary: Move AMR to Station
-      description: Send an AMR to a specified station.
+      operationId: moveAmrToStation
+      tags: [Movement]
+      summary: Kirim kendaraan tertentu ke station aktif tertentu
+      description: >
+        Mengirim satu kendaraan (ditentukan lewat DesignatedCarrier) menuju sebuah
+        station aktif (TargetStation) beserta daftar operasi yang harus dijalankan
+        di sana.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MoveToStationRequest'
+              $ref: '#/components/schemas/MoveStationParm'
             example:
-              OrderID: Abdul-1710000000
+              OrderID: "26010303"
               Priority: 0
               DesignatedCarrier: 1
-              TargetStation: 60
+              TargetStation: 253
               Operations:
-                - OperationCode: 1
+                - OperationCode: 16
                   Parameter1: 0
                   Parameter2: 0
                   Parameter3: 0
-                  ExecutionType: 2
-              PermanentFlag: false
+                  ExecutionType: 0
+              PermanentFlag: true
       responses:
         '200':
-          description: Success
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResultResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: MoveAmrToStation
+                resData: '{"ExecResult":true,"ExecCode":0,"ExecMsg":"26010303"}'
+                ResTime: "2026-01-03 11:24:31"
 
   /api/Amr/MoveAmrToNode:
     post:
-      tags:
-        - AMR
-      summary: Move AMR to Node
+      operationId: moveAmrToNode
+      tags: [Movement]
+      summary: Kirim kendaraan tertentu ke node navigasi tertentu
+      description: >
+        Mengirim satu kendaraan (DesignatedCarrier) menuju sebuah node navigasi
+        (TargetNode) beserta daftar operasi yang harus dijalankan.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MoveToNodeRequest'
+              $ref: '#/components/schemas/MoveNodeParm'
+            example:
+              OrderID: "26010304"
+              Priority: 0
+              DesignatedCarrier: 1
+              TargetNode: 631
+              Operations:
+                - OperationCode: 0
+                  Parameter1: 0
+                  Parameter2: 0
+                  Parameter3: 0
+                  ExecutionType: 0
+              PermanentFlag: false
       responses:
         '200':
-          description: Success
-
-  /api/Amr/AddOrder:
-    post:
-      tags:
-        - AMR
-      summary: Add Order
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddOrderRequest'
-      responses:
-        '200':
-          description: Success
-
-  /api/Amr/CancelOrder:
-    get:
-      tags:
-        - AMR
-      summary: Cancel Order
-      description: Cancel an existing order.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CancelOrderRequest'
-      responses:
-        '200':
-          description: Success
-
-  /api/Amr/GetExecutingOrders:
-    get:
-      tags:
-        - AMR
-      summary: Get Executing Orders
-      responses:
-        '200':
-          description: List of executing orders
-
-  /api/Amr/GetOrderMsg:
-    get:
-      tags:
-        - AMR
-      summary: Get Order Message
-      responses:
-        '200':
-          description: Success
-
-  /api/Amr/GetAmrMsg:
-    get:
-      tags:
-        - AMR
-      summary: Get AMR Message
-      responses:
-        '200':
-          description: Success
-
-  /api/Amr/GetAmrMsgMPL:
-    get:
-      tags:
-        - AMR
-      summary: Get AMR Message MPL
-      responses:
-        '200':
-          description: Success
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResultResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: MoveAmrToNode
+                resData: '{"ExecResult":true,"ExecCode":0,"ExecMsg":"26010304"}'
+                ResTime: "2026-01-03 11:24:31"
 
   /api/Amr/ReleaseAmr:
     get:
-      tags:
-        - AMR
-      summary: Release AMR
-      description: Release AGV if no task is running.
+      operationId: releaseAmr
+      tags: [Movement]
+      summary: Melepas (release) kendaraan tertentu dari alokasi/lock saat ini
       parameters:
-        - in: query
-          name: carrierId
+        - name: carrierID
+          in: query
           required: true
+          description: Nomor kendaraan (carrier) yang akan dilepas
           schema:
             type: integer
+            format: int32
+            minimum: 0
+            maximum: 65535
           example: 1
       responses:
         '200':
-          description: Success
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResultResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: ReleaseAmr
+                resData: '{"ExecResult":true,"ExecCode":0,"ExecMsg":"26010304"}'
+                ResTime: "2026-01-03 11:24:31"
+
+  /api/Amr/GetOrderMsg:
+    get:
+      operationId: getOrderMsg
+      tags: [Order]
+      summary: Mendapatkan informasi satu tugas/order tertentu berdasarkan OrderID
+      parameters:
+        - name: orderID
+          in: query
+          required: true
+          description: Nomor/ID order yang ingin diquery
+          schema:
+            type: string
+          example: "26010305"
+      responses:
+        '200':
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrderMsgResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: GetOrderMsg
+                resData: >-
+                  {"CarrierID":1,"OrderID":"26010305","Node":631,"Station":0,
+                  "Priority":0,"Status":2,
+                  "CreateTime":"2026-01-03T14:04:08.1346693+08:00","OpCount":1,
+                  "Operations":[{"OperationCode":0,"Parameter1":0,"Parameter2":0,
+                  "Parameter3":0,"ExecutionType":0}]}
+                ResTime: "2026-01-03 14:04:59"
+
+  /api/Amr/GetExecutingOrders:
+    get:
+      operationId: getExecutingOrders
+      tags: [Order]
+      summary: Mendapatkan seluruh tugas/order yang sedang dalam status eksekusi
+      description: Tidak memerlukan parameter.
+      responses:
+        '200':
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetExecutingOrdersResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: GetExecutingOrders
+                resData: >-
+                  {"OrderMsgList":[{"CarrierID":1,"OrderID":"26010306","Node":2223,
+                  "Station":0,"Priority":0,"Status":2,
+                  "CreateTime":"2026-01-03T14:11:44.5616503+08:00","OpCount":1,
+                  "Operations":[{"OperationCode":0,"Parameter1":0,"Parameter2":0,
+                  "Parameter3":0,"ExecutionType":0}]},
+                  {"CarrierID":2,"OrderID":"26010307","Node":2212,"Station":0,
+                  "Priority":0,"Status":2,
+                  "CreateTime":"2026-01-03T14:12:22.5810456+08:00","OpCount":1,
+                  "Operations":[{"OperationCode":0,"Parameter1":0,"Parameter2":0,
+                  "Parameter3":0,"ExecutionType":0}]}]}
+                ResTime: "2026-01-03 14:12:46"
+
+  /api/Amr/AddOrder:
+    post:
+      operationId: addOrder
+      tags: [Order]
+      summary: Menambahkan tugas/order baru
+      description: >
+        Membuat order baru untuk kendaraan tertentu (via CarrierID) atau untuk tipe
+        kendaraan tertentu (via CarrierType) menuju node/station tujuan.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderParm'
+            example:
+              OrderID: "26010307"
+              CarrierID: 1
+              CarrierType: 0
+              TargetNode: 631
+              TargetStation: 0
+              Priority: 1
+              Operations:
+                - OperationCode: 0
+                  Parameter1: 0
+                  Parameter2: 0
+                  Parameter3: 0
+                  ExecutionType: 0
+              ReplyUrl: ""
+              PermanentFlag: true
+      responses:
+        '200':
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResultResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: AddOrder
+                resData: '{"ExecResult":true,"ExecCode":0,"ExecMsg":"success"}'
+                ResTime: "2026-01-03 15:01:33"
+
+  /api/Amr/CancelOrder:
+    post:
+      operationId: cancelOrder
+      tags: [Order]
+      summary: Membatalkan tugas/order yang sudah ada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelInfo'
+            example:
+              orderID: "26010308"
+              releaseFlag: true
+      responses:
+        '200':
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResultResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: CancelOrder
+                resData: '{"ExecResult":true,"ExecCode":0,"ExecMsg":"success"}'
+                ResTime: "2026-01-03 15:01:33"
+
+  /api/Amr/GetAmrMsg:
+    get:
+      operationId: getAmrMsg
+      tags: [Vehicle]
+      summary: Mendapatkan seluruh informasi telemetri satu kendaraan tertentu
+      description: >
+        Mengembalikan seluruh informasi kendaraan: alarm, baterai, koneksi,
+        koordinat, lokasi, peta, kecepatan, status, order, traffic, rencana
+        perjalanan (plan), motor, dan hasil scan.
+      parameters:
+        - name: carrierID
+          in: query
+          required: true
+          description: Nomor kendaraan yang ingin diquery
+          schema:
+            type: integer
+            format: int32
+          example: 1
+      responses:
+        '200':
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAmrMsgResponse'
+
+  /api/Amr/GetAmrMsgMPL:
+    get:
+      operationId: getAmrMsgMPL
+      tags: [Vehicle]
+      summary: Mendapatkan informasi telemetri seluruh kendaraan
+      description: Tidak memerlukan parameter. Mengembalikan daftar AmrMsgParam untuk semua kendaraan.
+      responses:
+        '200':
+          description: Berhasil (perhatikan resCode di body untuk status sebenarnya)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAmrMsgMPLResponse'
 
 components:
-
   schemas:
 
-    Operation:
+    # ---------------------------------------------------------------------
+    # Struktur umum response (Result wrapper)
+    # ---------------------------------------------------------------------
+
+    ResultBase:
       type: object
+      description: >
+        Struktur pembungkus (envelope) umum untuk semua response. Field `resData`
+        pada masing-masing endpoint di-override oleh skema turunannya (lihat
+        *...Response schemas* di bawah) karena tipe isinya berbeda per endpoint,
+        dan secara aktual dikirim sebagai string JSON ter-stringify (lihat catatan
+        di `info.description`).
+      required:
+        - resCode
+        - resMsg
+        - BizCode
+        - ResTime
+      properties:
+        resCode:
+          type: integer
+          format: int32
+          description: >
+            Kode hasil. Nilainya unik: 0 = berhasil (success), selain 0 = gagal.
+          example: 0
+        resMsg:
+          type: string
+          description: Pesan keterangan hasil pemanggilan.
+          example: success
+        BizCode:
+          type: string
+          description: Kode bisnis — berisi nama endpoint yang dipanggil (mis. "AddOrder").
+          example: AddOrder
+        ResTime:
+          type: string
+          description: >
+            Waktu server memberikan respons, format "yyyy-MM-dd HH:mm:ss". Perhatikan:
+            nama field aktual pada JSON respons adalah "ResTime" (R besar), berbeda
+            dari nama "resTime" yang tertulis pada tabel dokumentasi asli.
+          example: "2026-01-03 11:24:31"
+
+    ResDataModel:
+      type: object
+      description: >
+        Struktur hasil eksekusi generik, digunakan oleh endpoint aksi
+        (MoveAmrToStation, MoveAmrToNode, ReleaseAmr, AddOrder, CancelOrder).
+        Ini adalah bentuk SETELAH `resData` (string) di-JSON.parse ulang oleh client.
+      properties:
+        ExecResult:
+          type: boolean
+          description: Hasil eksekusi (true = berhasil, false = gagal).
+        ExecCode:
+          type: integer
+          format: int32
+          description: Kode hasil eksekusi.
+        ExecMsg:
+          type: string
+          description: Pesan hasil eksekusi (sering berisi OrderID terkait, atau "success").
+
+    OperationResultResponse:
+      description: >
+        Response envelope untuk endpoint yang mengembalikan ResDataModel di
+        `resData` (MoveAmrToStation, MoveAmrToNode, ReleaseAmr, AddOrder, CancelOrder).
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            resData:
+              type: string
+              description: >
+                String JSON ter-stringify berisi struktur ResDataModel. Client
+                harus melakukan JSON.parse() ulang untuk mendapatkan object
+                { ExecResult, ExecCode, ExecMsg }.
+              x-decoded-schema: '#/components/schemas/ResDataModel'
+              example: '{"ExecResult":true,"ExecCode":0,"ExecMsg":"26010303"}'
+
+    GetOrderMsgResponse:
+      description: Response envelope untuk GetOrderMsg (resData = OrderMsg).
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            resData:
+              type: string
+              description: >
+                String JSON ter-stringify berisi struktur OrderMsg. Client harus
+                melakukan JSON.parse() ulang untuk mendapatkan object aslinya.
+              x-decoded-schema: '#/components/schemas/OrderMsg'
+              example: >-
+                {"CarrierID":1,"OrderID":"26010305","Node":631,"Station":0,
+                "Priority":0,"Status":2,
+                "CreateTime":"2026-01-03T14:04:08.1346693+08:00","OpCount":1,
+                "Operations":[{"OperationCode":0,"Parameter1":0,"Parameter2":0,
+                "Parameter3":0,"ExecutionType":0}]}
+
+    GetExecutingOrdersResponse:
+      description: Response envelope untuk GetExecutingOrders (resData = OrderMsgMPL).
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            resData:
+              type: string
+              description: >
+                String JSON ter-stringify berisi struktur OrderMsgMPL (daftar OrderMsg).
+                Client harus melakukan JSON.parse() ulang untuk mendapatkan object aslinya.
+              x-decoded-schema: '#/components/schemas/OrderMsgMPL'
+
+    GetAmrMsgResponse:
+      description: Response envelope untuk GetAmrMsg (resData = AmrMsgParam).
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            resData:
+              type: string
+              description: >
+                String JSON ter-stringify berisi struktur AmrMsgParam (seluruh
+                telemetri satu kendaraan). Client harus melakukan JSON.parse()
+                ulang untuk mendapatkan object aslinya.
+              x-decoded-schema: '#/components/schemas/AmrMsgParam'
+
+    GetAmrMsgMPLResponse:
+      description: Response envelope untuk GetAmrMsgMPL (resData = AmrMsgParamAll).
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            resData:
+              type: string
+              description: >
+                String JSON ter-stringify berisi struktur AmrMsgParamAll (daftar
+                AmrMsgParam untuk semua kendaraan). Client harus melakukan
+                JSON.parse() ulang untuk mendapatkan object aslinya.
+              x-decoded-schema: '#/components/schemas/AmrMsgParamAll'
+
+    # ---------------------------------------------------------------------
+    # Struktur request
+    # ---------------------------------------------------------------------
+
+    OperationMsg:
+      type: object
+      description: Satu unit operasi/aksi yang dijalankan kendaraan di titik tujuannya.
       properties:
         OperationCode:
           type: integer
+          format: int32
+          description: Kode operasi/aksi yang akan dijalankan.
         Parameter1:
           type: integer
+          format: int32
+          description: Parameter tambahan 1 untuk operasi ini.
         Parameter2:
           type: integer
+          format: int32
+          description: Parameter tambahan 2 untuk operasi ini.
         Parameter3:
           type: integer
+          format: int32
+          description: Parameter tambahan 3 untuk operasi ini.
         ExecutionType:
           type: integer
+          format: int32
+          description: >
+            Jenis/cara eksekusi operasi. Umumnya bernilai 0 atau 1 tergantung
+            endpoint (lihat deskripsi masing-masing endpoint pemanggil).
 
-    MoveToStationRequest:
+    MoveStationParm:
       type: object
+      description: Parameter untuk mengirim kendaraan tertentu ke station aktif tertentu.
+      required:
+        - OrderID
+        - DesignatedCarrier
+        - TargetStation
       properties:
         OrderID:
           type: string
+          description: Nomor/ID order.
         Priority:
           type: integer
+          format: int32
+          minimum: 1
+          maximum: 5
+          description: Prioritas (1-5). Semakin besar nilainya, semakin tinggi prioritasnya.
         DesignatedCarrier:
           type: integer
+          format: int32
+          description: Nomor kendaraan yang ditunjuk untuk menjalankan tugas ini.
         TargetStation:
           type: integer
+          format: int32
+          description: Station aktif tujuan.
         Operations:
           type: array
+          description: Daftar operasi yang dijalankan setelah kendaraan tiba di tujuan.
           items:
-            $ref: '#/components/schemas/Operation'
+            $ref: '#/components/schemas/OperationMsg'
         PermanentFlag:
           type: boolean
+          description: Menandakan apakah tugas ini bersifat permanen/menetap (recurring).
 
-    MoveToNodeRequest:
+    MoveNodeParm:
       type: object
+      description: Parameter untuk mengirim kendaraan tertentu ke node navigasi tertentu.
+      required:
+        - OrderID
+        - DesignatedCarrier
+        - TargetNode
       properties:
         OrderID:
           type: string
+          description: Nomor/ID order.
         Priority:
           type: integer
+          format: int32
+          minimum: 1
+          maximum: 5
+          description: Prioritas (1-5). Semakin besar nilainya, semakin tinggi prioritasnya.
         DesignatedCarrier:
           type: integer
+          format: int32
+          description: Nomor kendaraan yang ditunjuk untuk menjalankan tugas ini.
         TargetNode:
           type: integer
+          format: int32
+          description: Node navigasi tujuan.
         Operations:
           type: array
+          description: Daftar operasi yang dijalankan setelah kendaraan tiba di tujuan.
           items:
-            $ref: '#/components/schemas/Operation'
+            $ref: '#/components/schemas/OperationMsg'
         PermanentFlag:
           type: boolean
+          description: Menandakan apakah tugas ini bersifat permanen/menetap (recurring).
 
-    AddOrderRequest:
+    OrderParm:
       type: object
+      description: Parameter untuk membuat order/tugas baru.
+      required:
+        - OrderID
+        - TargetNode
+        - TargetStation
       properties:
         OrderID:
           type: string
+          description: Nomor/ID order.
         CarrierID:
           type: integer
+          format: int32
+          description: >
+            Nomor kendaraan spesifik yang ditugaskan. Tidak boleh bernilai 0
+            apabila CarrierType juga 0.
         CarrierType:
           type: integer
+          format: int32
+          description: >
+            Tipe kendaraan yang ditugaskan (dipakai bila tidak menunjuk kendaraan
+            spesifik). Tidak boleh bernilai 0 apabila CarrierID juga 0.
         TargetNode:
           type: integer
+          format: int32
+          description: Node navigasi tujuan.
         TargetStation:
           type: integer
+          format: int32
+          description: Station aktif tujuan.
         Priority:
           type: integer
-        ReplyUrl:
-          type: string
-        PermanentFlag:
-          type: boolean
+          format: int32
+          minimum: 1
+          maximum: 5
+          description: Prioritas (1-5). Semakin besar nilainya, semakin tinggi prioritasnya.
         Operations:
           type: array
+          description: Daftar operasi yang dijalankan setelah kendaraan tiba di tujuan.
           items:
-            $ref: '#/components/schemas/Operation'
+            $ref: '#/components/schemas/OperationMsg'
+        ReplyUrl:
+          type: string
+          description: >
+            URL callback untuk membalas ID kendaraan yang dialokasikan ke order ini.
+            Bersifat opsional — kirim string kosong ("") bila tidak digunakan.
+        PermanentFlag:
+          type: boolean
+          description: Menandakan apakah tugas ini bersifat permanen/menetap (recurring).
 
-    CancelOrderRequest:
+    CancelInfo:
       type: object
+      description: Parameter untuk membatalkan order/tugas.
+      required:
+        - orderID
+        - releaseFlag
       properties:
         orderID:
           type: string
+          description: Nomor/ID order yang akan dibatalkan.
         releaseFlag:
           type: boolean
+          description: >
+            Apakah kendaraan yang terkait juga harus langsung dilepas (release)
+            bersamaan dengan pembatalan tugas.
+
+    # ---------------------------------------------------------------------
+    # Struktur order/tugas (untuk GetOrderMsg & GetExecutingOrders)
+    # ---------------------------------------------------------------------
+
+    OrderMsg:
+      type: object
+      description: Informasi lengkap satu tugas/order.
+      properties:
+        CarrierID:
+          type: integer
+          format: int32
+          description: Nomor kendaraan yang menjalankan order ini.
+        OrderID:
+          type: string
+          description: Nomor/ID order.
+        Node:
+          type: integer
+          format: int32
+          description: Node navigasi tujuan (bila order berupa perintah menuju node).
+        Station:
+          type: integer
+          format: int32
+          description: Station aktif tujuan (bila order berupa perintah menuju station).
+        Priority:
+          type: integer
+          format: int32
+          description: Prioritas order.
+        Status:
+          type: integer
+          format: int32
+          description: >
+            Status tugas: 0 = idle/kosong, 1 = mulai (start), 2 = sedang mengirim
+            (delivering), 3 = sedang beroperasi (operating), 4 = selesai (finish),
+            5 = dibatalkan (cancel), 255 = error/异常, lainnya = error tidak dikenal.
+          enum: [0, 1, 2, 3, 4, 5, 255]
+        CreateTime:
+          type: string
+          format: date-time
+          description: Waktu order dibuat.
+        OpCount:
+          type: integer
+          format: int32
+          description: Jumlah operasi pada order ini.
+        Operations:
+          type: array
+          description: Daftar operasi yang dijalankan.
+          items:
+            $ref: '#/components/schemas/OperationMsg'
+
+    OrderMsgMPL:
+      type: object
+      description: Pembungkus daftar order — hasil dari GetExecutingOrders.
+      properties:
+        OrderMsgList:
+          type: array
+          description: Daftar seluruh order yang sedang dieksekusi.
+          items:
+            $ref: '#/components/schemas/OrderMsg'
+
+    # ---------------------------------------------------------------------
+    # Struktur telemetri kendaraan (untuk GetAmrMsg & GetAmrMsgMPL)
+    # ---------------------------------------------------------------------
+
+    AmrMsgParam:
+      type: object
+      description: Seluruh informasi telemetri satu kendaraan (AMR/AGV).
+      properties:
+        carrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        amrCurrentAlarms:
+          $ref: '#/components/schemas/AmrAlarmMsgMPL'
+        amrBatteryMsg:
+          $ref: '#/components/schemas/AmrBatteryMsg'
+        amrConnectMsg:
+          $ref: '#/components/schemas/AmrConnectMsg'
+        amrCoordinateMsg:
+          $ref: '#/components/schemas/AmrCoordinateMsg'
+        amrLocationMsg:
+          $ref: '#/components/schemas/AmrLocationMsg'
+        amrMapMsg:
+          $ref: '#/components/schemas/AmrMapMsg'
+        amrSpeedMsg:
+          $ref: '#/components/schemas/AmrSpeedMsg'
+        amrStatusMsg:
+          $ref: '#/components/schemas/AmrStatusMsg'
+        amrOrderMsg:
+          $ref: '#/components/schemas/AmrOrderMsg'
+        amrTrafficMsg:
+          $ref: '#/components/schemas/AmrTrafficMsg'
+        amrPlanMsg:
+          $ref: '#/components/schemas/AmrPlanMsg'
+        amrMotorMsg:
+          $ref: '#/components/schemas/AmrMotorMsg'
+        amrScanMsg:
+          $ref: '#/components/schemas/AmrScanMsg'
+
+    AmrMsgParamAll:
+      type: object
+      description: Pembungkus daftar telemetri seluruh kendaraan — hasil dari GetAmrMsgMPL.
+      properties:
+        amrMsgList:
+          type: array
+          description: Daftar informasi telemetri seluruh kendaraan.
+          items:
+            $ref: '#/components/schemas/AmrMsgParam'
+
+    AmrAlarmMsgMPL:
+      type: object
+      description: Daftar alarm yang sedang aktif pada kendaraan.
+      properties:
+        AmrAlarmMsgList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmrAlarmMsg'
+
+    AmrAlarmMsg:
+      type: object
+      description: Satu entri alarm kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        AlarmCode:
+          type: integer
+          format: int32
+          description: Kode alarm.
+        AlarmTime:
+          type: string
+          format: date-time
+          description: Waktu alarm muncul.
+        AlarmDuration:
+          type: integer
+          format: int32
+          description: Durasi alarm berlangsung.
+        ClearTime:
+          type: string
+          format: date-time
+          description: Waktu alarm dibersihkan/hilang.
+
+    AmrBatteryMsg:
+      type: object
+      description: Informasi baterai kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        RecordTime:
+          type: string
+          description: Waktu pencatatan data (dikirim sebagai string, bukan format date-time baku).
+        Alarm:
+          type: integer
+          format: int32
+          description: Kode alarm terkait baterai.
+        BatteryLevel:
+          type: number
+          format: double
+          description: Level/persentase muatan baterai.
+        ChargeCurrent:
+          type: integer
+          format: int32
+          description: Arus saat pengisian daya (charging).
+        ChargesCount:
+          type: integer
+          format: int32
+          description: Jumlah siklus pengisian daya yang sudah dilakukan.
+        DischargeCurrent:
+          type: integer
+          format: int32
+          description: Arus saat pemakaian/pengosongan daya (discharge).
+        Temperature:
+          type: integer
+          format: int32
+          description: Suhu baterai.
+        Voltage:
+          type: integer
+          format: int32
+          description: Tegangan baterai.
+
+    AmrConnectMsg:
+      type: object
+      description: Informasi koneksi & status alokasi kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        CarrierStatus:
+          type: integer
+          format: int32
+          description: >
+            Status kendaraan: 0 = idle/kosong, 1 = terkunci (locked),
+            2 = sudah teralokasi (assigned), 3 = sedang mengirim (delivering),
+            4 = tiba di station (arrived), 5 = sedang berubah (changing).
+          enum: [0, 1, 2, 3, 4, 5]
+        ConnectType:
+          type: integer
+          format: int32
+          description: "Tipe koneksi: 0 = normal, 1 = terkunci (lock), 2 = pemulihan (recover)."
+          enum: [0, 1, 2]
+        ConnectState:
+          type: integer
+          format: int32
+          description: >
+            Status koneksi: 0 = belum dimulai (not started), 1 = online,
+            2 = offline, 3 = freeze/dibekukan.
+          enum: [0, 1, 2, 3]
+        CarrierToken:
+          type: integer
+          format: int32
+          description: Token unik kendaraan.
+        CarrierPassType:
+          type: integer
+          format: int32
+          description: Tipe pass/izin kendaraan (rentang nilai 0-15).
+        DisconnectTime:
+          type: string
+          description: Waktu kendaraan dibekukan/freeze (dikirim sebagai string).
+        OfflineTime:
+          type: string
+          description: Waktu kendaraan offline (dikirim sebagai string).
+        OnlineTime:
+          type: string
+          description: Waktu kendaraan online (dikirim sebagai string).
+
+    AmrCoordinateMsg:
+      type: object
+      description: Informasi koordinat posisi kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        Angle:
+          type: integer
+          format: int32
+          description: Sudut orientasi kendaraan.
+        CoordinateX:
+          type: number
+          format: double
+          description: Koordinat X.
+        CoordinateY:
+          type: number
+          format: double
+          description: Koordinat Y.
+        CoordinateZ:
+          type: number
+          format: double
+          description: Koordinat Z.
+        RecordTime:
+          type: string
+          format: date-time
+          description: Waktu pencatatan data.
+
+    AmrLocationMsg:
+      type: object
+      description: Informasi lokasi logis kendaraan (node & path saat ini).
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        Node:
+          type: integer
+          format: int32
+          description: Node navigasi saat ini.
+        Path:
+          type: integer
+          format: int32
+          description: Segmen jalur (path) saat ini.
+        RecordTime:
+          type: string
+          format: date-time
+          description: Waktu pencatatan data.
+
+    AmrMapMsg:
+      type: object
+      description: >
+        Informasi peta kendaraan. Catatan: field ini konsisten memakai casing huruf
+        kecil di awal (carrierId, mapData, recordTime), berbeda dari kebanyakan
+        struktur Amr* lain yang memakai "CarrierId" huruf besar.
+      properties:
+        carrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        mapData:
+          type: string
+          description: Data peta (raw/encoded).
+        recordTime:
+          type: string
+          description: Waktu pencatatan data (dikirim sebagai string).
+
+    AmrSpeedMsg:
+      type: object
+      description: Informasi kecepatan & akselerasi kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        Vx:
+          type: integer
+          format: int32
+          description: Kecepatan sumbu X (mm/s).
+        Vy:
+          type: integer
+          format: int32
+          description: Kecepatan sumbu Y (mm/s).
+        Vz:
+          type: integer
+          format: int32
+          description: Kecepatan sumbu Z (mm/s).
+        Vw:
+          type: integer
+          format: int32
+          description: Kecepatan rotasi/W (mm/s).
+        LineAcc:
+          type: number
+          format: double
+          description: Akselerasi linear (mm/s^2).
+        LineDec:
+          type: number
+          format: double
+          description: Deselerasi linear (mm/s^2).
+        RotationAcc:
+          type: number
+          format: double
+          description: Akselerasi rotasi (mm/s^2).
+        RotationDec:
+          type: number
+          format: double
+          description: Deselerasi rotasi (mm/s^2).
+        RecordTime:
+          type: string
+          format: date-time
+          description: Waktu pencatatan data.
+
+    SensorValue:
+      type: object
+      description: Satu entri data sensor deteksi obstacle/rintangan.
+      properties:
+        SensorArea:
+          type: integer
+          format: int32
+          description: Area/zona sensor obstacle.
+        OutSignal:
+          type: boolean
+          description: Sinyal terdeteksi pada lapisan luar (outer layer).
+        MidSignal:
+          type: boolean
+          description: Sinyal terdeteksi pada lapisan tengah (middle layer).
+        InSignal:
+          type: boolean
+          description: Sinyal terdeteksi pada lapisan dalam (inner layer).
+
+    AmrStatusMsg:
+      type: object
+      description: Informasi status operasional & mekanisme kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        CarrierType:
+          type: integer
+          format: int32
+          description: Tipe kendaraan.
+        ControlMode:
+          type: integer
+          format: int32
+          description: "Mode kontrol: 1 = otomatis (auto), 0 = manual."
+          enum: [0, 1]
+        MotionType:
+          type: integer
+          format: int32
+          description: >
+            Tipe gerakan, berupa bit-flag yang maknanya berbeda tergantung
+            MotionState: saat MotionState = berhenti (stop) — bit0 = idle,
+            bit1 = ter-traffic-control, bit2 = error/异常, bit3 = charging,
+            bit4 = pause, bit5 = operasi; saat MotionState = berjalan (driving) —
+            bit0 = berjalan normal, bit1 = berjalan pelan/deselerasi.
+        MotionState:
+          type: integer
+          format: int32
+          description: "Status gerak: 0 = berhenti (stop), 1 = berjalan (driving)."
+          enum: [0, 1]
+        NavigationalState:
+          type: integer
+          format: int32
+          description: Status navigasi kendaraan.
+        Signal1:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 1.
+        Signal2:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 2.
+        Signal3:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 3.
+        Signal4:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 4.
+        Signal5:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 5.
+        Signal6:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 6.
+        Signal7:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 7.
+        Signal8:
+          type: integer
+          format: int32
+          description: Sinyal fotolistrik/optik 8.
+        MechanismState:
+          type: integer
+          format: int32
+          description: Status mekanisme (mis. lift/fork/roller) kendaraan.
+        MechanismHeight:
+          type: integer
+          format: int32
+          description: Ketinggian mekanisme (utama).
+        MechanismHeight2:
+          type: integer
+          format: int32
+          description: Ketinggian mekanisme (sekunder, bila ada dua sumbu ketinggian).
+        MechanismAngle:
+          type: integer
+          format: int32
+          description: Sudut mekanisme.
+        ShelfNumber:
+          type: integer
+          format: int32
+          description: Nomor rak/shelf (载具) yang sedang dibawa kendaraan.
+        GoodsWeight:
+          type: integer
+          format: int32
+          description: Berat barang yang sedang dibawa.
+        SensorsCount:
+          type: integer
+          format: int32
+          description: Jumlah sensor obstacle yang aktif melaporkan data.
+        SensorValues:
+          type: array
+          description: Daftar data sensor obstacle.
+          items:
+            $ref: '#/components/schemas/SensorValue'
+        RecordTime:
+          type: string
+          format: date-time
+          description: Waktu pencatatan data.
+
+    OrderInformation:
+      type: object
+      description: Informasi satu tugas dalam daftar tugas kendaraan (AmrOrderMsg).
+      properties:
+        OrderID:
+          type: string
+          description: Nomor/ID order.
+        OrderType:
+          type: integer
+          format: int32
+          description: Tipe tugas/order.
+        VertexNumber:
+          type: integer
+          format: int32
+          description: Titik/vertex tujuan tugas.
+        OpCount:
+          type: integer
+          format: int32
+          description: Jumlah aksi/operasi pada tugas ini.
+        Operations:
+          type: array
+          description: Daftar aksi/operasi.
+          items:
+            $ref: '#/components/schemas/OperationMsg'
+        OrderStatus:
+          type: integer
+          format: int32
+          description: Status tugas saat ini.
+        OperateProgress:
+          type: integer
+          format: int32
+          description: Progres operasi yang sedang dijalankan.
+        OrderError:
+          type: integer
+          format: int32
+          description: >
+            Kode error tugas: 0 = tidak ada error, 1 = titik tugas tidak dikenal
+            (unknown task point), 2 = kode operasi tidak dikenal (unknown operation
+            code), 3 = status kendaraan abnormal, 4 = gagal membatalkan (cancel
+            failed), 5 = gagal mengubah (change failed), lainnya = error tidak
+            diketahui.
+          enum: [0, 1, 2, 3, 4, 5]
+        OrderToken:
+          type: string
+          description: Token/nomor internal order yang dikirim ke kendaraan.
+
+    AmrOrderMsg:
+      type: object
+      description: Ringkasan daftar tugas yang sedang dijalankan/tercatat pada kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        RecordTime:
+          type: string
+          format: date-time
+          description: Waktu pencatatan data.
+        OrderCount:
+          type: integer
+          format: int32
+          description: Jumlah tugas pada kendaraan ini.
+        OrderData:
+          type: array
+          description: Daftar detail tugas.
+          items:
+            $ref: '#/components/schemas/OrderInformation'
+
+    AmrTrafficMsg:
+      type: object
+      description: Informasi status pengaturan lalu lintas (traffic control) kendaraan.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        BlockState:
+          type: integer
+          format: int32
+          description: >
+            Status kontrol: 0 = tidak ada, bit0 = kontrol keamanan (safety
+            control), bit1 = kontrol jalan (walking control).
+        BlockSource:
+          type: integer
+          format: int32
+          description: Sumber kontrol — nomor kendaraan yang menyebabkan kontrol ini.
+        BlockType:
+          type: integer
+          format: int32
+          description: >
+            Tipe kontrol: 0 = tidak ada, 1 = path/jalur, 2 = area/zona, 3 = variabel.
+          enum: [0, 1, 2, 3]
+        BlockParam:
+          type: integer
+          format: int32
+          description: >
+            Objek kontrol — nomor path, nomor area, atau nilai variabel,
+            tergantung BlockType.
+
+    AmrPlanMsg:
+      type: object
+      description: Informasi rencana rute (path planning) kendaraan saat ini.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        RecordTime:
+          type: string
+          format: date-time
+          description: Waktu pencatatan data.
+        PlanState:
+          type: integer
+          format: int32
+          description: >
+            Status perencanaan: 0 = idle/kosong, 1 = mulai (start), 2 = sedang
+            merencanakan (planning), 3 = pause, 4 = berhenti (stop), 5 = selesai
+            (end), 200 = error, lainnya = error tidak diketahui.
+          enum: [0, 1, 2, 3, 4, 5, 200]
+        PlanTargetNode:
+          type: integer
+          format: int32
+          description: Node tujuan akhir rencana rute.
+        PlanStartNode:
+          type: integer
+          format: int32
+          description: Node awal rencana rute.
+        PlanCurrentNode:
+          type: integer
+          format: int32
+          description: Node posisi kendaraan saat ini dalam rencana rute.
+        DynamicPaths:
+          type: array
+          description: Seluruh kandidat jalur dinamis yang tersedia.
+          items:
+            type: integer
+            format: int32
+        RequestedPaths:
+          type: array
+          description: Jalur yang sedang diminta/direquest.
+          items:
+            type: integer
+            format: int32
+        LockedPaths:
+          type: array
+          description: Jalur yang sudah terkunci (locked) untuk kendaraan ini.
+          items:
+            type: integer
+            format: int32
+        RunningPaths:
+          type: array
+          description: Jalur yang sedang dilalui kendaraan saat ini.
+          items:
+            type: integer
+            format: int32
+
+    AmrMotorMsg:
+      type: object
+      description: >
+        Informasi motor & odometer kendaraan. Catatan: field arus motor untuk
+        motor 4-8 pada implementasi aktual bernama "MotorCurren4" s.d.
+        "MotorCurren8" (huruf "t" hilang, typo pada API asli) — bukan
+        "MotorCurrent4" dst. seperti pada tabel dokumentasi. Field motor 1-3
+        tetap "MotorCurrent1/2/3" (ejaan lengkap).
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        TotalMileage:
+          type: integer
+          format: int64
+          description: Total jarak tempuh (satuan 0.1 meter).
+        MotorCurrent1:
+          type: integer
+          format: int32
+          description: Arus motor 1.
+        MotorCurrent2:
+          type: integer
+          format: int32
+          description: Arus motor 2.
+        MotorCurrent3:
+          type: integer
+          format: int32
+          description: Arus motor 3.
+        MotorCurren4:
+          type: integer
+          format: int32
+          description: Arus motor 4 (nama field mengikuti typo pada API asli — huruf "t" hilang).
+        MotorCurren5:
+          type: integer
+          format: int32
+          description: Arus motor 5 (nama field mengikuti typo pada API asli — huruf "t" hilang).
+        MotorCurren6:
+          type: integer
+          format: int32
+          description: Arus motor 6 (nama field mengikuti typo pada API asli — huruf "t" hilang).
+        MotorCurren7:
+          type: integer
+          format: int32
+          description: Arus motor 7 (nama field mengikuti typo pada API asli — huruf "t" hilang).
+        MotorCurren8:
+          type: integer
+          format: int32
+          description: Arus motor 8 (nama field mengikuti typo pada API asli — huruf "t" hilang).
+        MotorSpeed1:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 1.
+        MotorSpeed2:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 2.
+        MotorSpeed3:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 3.
+        MotorSpeed4:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 4.
+        MotorSpeed5:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 5.
+        MotorSpeed6:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 6.
+        MotorSpeed7:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 7.
+        MotorSpeed8:
+          type: integer
+          format: int32
+          description: Kecepatan putar (RPM) motor 8.
+        MotorAlarm1:
+          type: integer
+          format: int32
+          description: Kode alarm motor 1.
+        MotorAlarm2:
+          type: integer
+          format: int32
+          description: Kode alarm motor 2.
+        MotorAlarm3:
+          type: integer
+          format: int32
+          description: Kode alarm motor 3.
+        MotorAlarm4:
+          type: integer
+          format: int32
+          description: Kode alarm motor 4.
+        MotorAlarm5:
+          type: integer
+          format: int32
+          description: Kode alarm motor 5.
+        MotorAlarm6:
+          type: integer
+          format: int32
+          description: Kode alarm motor 6.
+        MotorAlarm7:
+          type: integer
+          format: int32
+          description: Kode alarm motor 7.
+        MotorAlarm8:
+          type: integer
+          format: int32
+          description: Kode alarm motor 8.
+
+    AmrScanMsg:
+      type: object
+      description: >
+        Informasi hasil pemindaian (scan) kode pada kendaraan. Catatan: field
+        konten data pada tabel dokumentasi tertulis "DataConent" (typo), namun
+        pada contoh JSON respons aktual bernama "DataContent" (ejaan benar) —
+        skema ini mengikuti nama field pada respons aktual.
+      properties:
+        CarrierId:
+          type: integer
+          format: int32
+          description: Nomor kendaraan.
+        DataLength:
+          type: integer
+          format: int32
+          description: Panjang data hasil scan.
+        DataContent:
+          type: array
+          description: Isi data hasil scan (array byte).
+          items:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 255
