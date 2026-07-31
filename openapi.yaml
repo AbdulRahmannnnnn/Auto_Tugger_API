@@ -72,11 +72,11 @@ paths:
               DesignatedCarrier: 1
               TargetStation: 253
               Operations:
-                - OperationCode: 16
-                  Parameter1: 0
+                - OperationCode: 368
+                  Parameter1: 2
                   Parameter2: 0
                   Parameter3: 0
-                  ExecutionType: 0
+                  ExecutionType: 1
               PermanentFlag: true
       responses:
         '200':
