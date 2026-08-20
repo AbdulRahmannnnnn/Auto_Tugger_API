@@ -124,7 +124,7 @@ paths:
             
       x-codeSamples:
         - lang: cURL
-          label: Payload
+          label: cURL
           source: |
             "1"
   
