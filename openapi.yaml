@@ -121,6 +121,12 @@ paths:
             maximum: 65535
           example: 
             "1"
+            
+      x-codeSamples:
+        - lang: cURL
+          label: Payload
+          source: |
+            "1"
   
       responses:
         '200':
