@@ -126,7 +126,7 @@ paths:
         - lang: cURL
           label: cURL
           source: |
-            "1"
+            curl -X GET "http://localhost:62205/api/Amr/ReleaseAmr?carrierID=1"
   
       responses:
         '200':
