@@ -5,39 +5,7 @@ info:
     API for controlling and monitoring a fleet of AMR/AGV vehicles (Auto Tugger) —
     dispatching tasks to vehicles, monitoring vehicle telemetry, and managing the
     task lifecycle (create / cancel / query).
-
-    ## Important notes from reviewing the original documentation
-
-    1. **`resData` is a string, not an object.** In every response example in the
-       original documentation, `resData` is always a re-stringified (escaped) JSON
-       payload, e.g. `"resData": "{\"ExecResult\":true,...}"`. This means the client
-       MUST run `JSON.parse()` a second time on the contents of `resData` to obtain
-       the actual object. The "shape after parsing" schemas are still defined under
-       `components.schemas` and referenced through the `x-decoded-schema` extension
-       for documentation and code generation purposes.
-    2. **Inconsistent casing on the last field.** The field tables in the original
-       documentation write `resTime` (lowercase), but ALL actual JSON response
-       examples use `ResTime` (capital R). This spec follows the actual JSON
-       examples (`ResTime`) because that is what the server really sends.
-    3. **Typo in `AmrMotorMsg`.** Fields `MotorCurrent4` through `MotorCurrent8` in
-       the documentation tables appear in the actual JSON examples as `MotorCurren4`
-       through `MotorCurren8` (missing the letter "t"). This spec follows the field
-       names from the actual JSON examples because that is what the server really
-       returns.
-    4. **Typo in `AmrScanMsg`.** The documentation table writes `DataConent`, but the
-       actual JSON examples use `DataContent` (correct spelling). This spec follows
-       the actual JSON examples.
-    5. **`Priority` range conflicts with the official examples.** The field tables
-       state a range of 1-5, but the official request examples for
-       `MoveAmrToStation` and `MoveAmrToNode` use `Priority: 0` — apparently meaning
-       "default / not set". The lower bound in this spec is relaxed to 0 so that the
-       official examples still validate.
-    6. For `GET` endpoints taking a single parameter (`ReleaseAmr`, `GetOrderMsg`,
-       `GetAmrMsg`), the request examples in the documentation only show a raw value
-       (e.g. `1` or `"26010305"`) rather than an explicit query string. This spec
-       models them as query parameters (`?carrierID=1`, etc.) as the most common
-       interpretation for a GET endpoint with a single parameter — adjust if the
-       actual implementation differs (e.g. route parameter or raw body).
+    ##[See API Collection using Postman](url):
   version: "1.0.0"
 servers:
   - url: http://localhost:62205
