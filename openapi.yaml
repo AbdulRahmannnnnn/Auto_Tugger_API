@@ -499,7 +499,7 @@ components:
           format: int32
           description: >
             Code of the operation/action to perform.
-            Support value:
+            ### Supported Operations
             - '368' - for Towing up and down
             - '16' - for charging
         Parameter1:
@@ -507,7 +507,7 @@ components:
           format: int32
           description: >
             Additional parameter 1 for this operation.
-            Support value:
+            ### Supported Operations
             - '1' - for Towing down (catch the cart) or Charge
             - '2' - for Towing up (release the cart)
         Parameter2:
