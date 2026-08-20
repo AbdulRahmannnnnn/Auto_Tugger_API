@@ -497,19 +497,27 @@ components:
         OperationCode:
           type: integer
           format: int32
-          description: Code of the operation/action to perform.
+          description: >
+            Code of the operation/action to perform.
+            Support value:
+            - '368' - for Towing up and down
+            - '16' - for charging
         Parameter1:
           type: integer
           format: int32
-          description: Additional parameter 1 for this operation.
+          description: >
+            Additional parameter 1 for this operation.
+            Support value:
+            - '1' - for Towing down (catch the cart) or Charge
+            - '2' - for Towing up (release the cart)
         Parameter2:
           type: integer
           format: int32
-          description: Additional parameter 2 for this operation.
+          description: Additional parameter 2 for this operation. Always '0'
         Parameter3:
           type: integer
           format: int32
-          description: Additional parameter 3 for this operation.
+          description: Additional parameter 3 for this operation. Always '0'
         ExecutionType:
           type: integer
           format: int32
