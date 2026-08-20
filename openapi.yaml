@@ -152,6 +152,11 @@ paths:
             minimum: 0
             maximum: 65535
           example: 1
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "http://localhost:62205/api/Amr/ReleaseAmr?carrierID=1"
       responses:
         '200':
           description: Request completed — check `resCode` in the body for the real status
@@ -182,6 +187,11 @@ paths:
           schema:
             type: string
           example: "26010305"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "http://localhost:62205/api/Amr/GetOrderMsg?orderID=26010305"
       responses:
         '200':
           description: Request completed — check `resCode` in the body for the real status
@@ -209,6 +219,11 @@ paths:
       description: >
         Returns every order currently being executed, together with the vehicle,
         destination, and status of each. Takes no parameters.
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "http://localhost:62205/api/Amr/GetExecutingOrders"
       responses:
         '200':
           description: Request completed — check `resCode` in the body for the real status
@@ -325,6 +340,11 @@ paths:
             type: integer
             format: int32
           example: 1
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "http://localhost:62205/api/Amr/GetAmrMsg?carrierID=1"
       responses:
         '200':
           description: Request completed — check `resCode` in the body for the real status
@@ -332,6 +352,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetAmrMsgResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: GetAmrMsg
+                resData: >-
+                  {"carrierId":1,"amrCurrentAlarms":{"AmrAlarmMsgList":[]},
+                  "amrBatteryMsg":{"CarrierId":1,"RecordTime":"0001-01-01T00:00:00",
+                  "Alarm":0,"BatteryLevel":0.0,"ChargeCurrent":0,"ChargesCount":0,
+                  "DischargeCurrent":0,"Temperature":0,"Voltage":0},
+                  "amrConnectMsg":{"CarrierId":1,"CarrierStatus":0,"ConnectType":0,
+                  "ConnectState":1,"CarrierToken":0,"CarrierPassType":0,
+                  "DisconnectTime":"0001-01-01T00:00:00",
+                  "OfflineTime":"0001-01-01T00:00:00",
+                  "OnlineTime":"2026-01-03T13:32:08.62561+08:00"},
+                  "amrCoordinateMsg":{"Angle":1080,"CarrierId":1,
+                  "CoordinateX":212944.0,"CoordinateY":13533.0,"CoordinateZ":0.0,
+                  "RecordTime":"0001-01-01T00:00:00"},
+                  "amrLocationMsg":{"CarrierId":1,"Node":2347,"Path":0,
+                  "RecordTime":"0001-01-01T00:00:00"},
+                  "amrMapMsg":{"carrierId":1,"mapData":"",
+                  "recordTime":"0001-01-01T00:00:00"},
+                  "amrSpeedMsg":{"CarrierId":1,"Vx":0,"Vy":0,"Vz":0,"Vw":0,
+                  "LineAcc":0.0,"LineDec":0.0,"RotationAcc":0.0,"RotationDec":0.0,
+                  "RecordTime":"0001-01-01T00:00:00"},
+                  "amrStatusMsg":{"CarrierId":1,"CarrierType":0,"ControlMode":1,
+                  "MotionType":255,"NavigationalState":2,"MotionState":0,
+                  "Signal1":0,"Signal2":0,"Signal3":0,"Signal4":0,"Signal5":0,
+                  "Signal6":0,"Signal7":0,"Signal8":0,"MechanismState":0,
+                  "MechanismHeight":0,"MechanismHeight2":0,"MechanismAngle":0,
+                  "ShelfNumber":0,"GoodsWeight":0,"SensorsCount":0,"SensorValues":[],
+                  "RecordTime":"2026-01-03T15:21:09.056858+08:00"},
+                  "amrOrderMsg":{"CarrierId":1,"RecordTime":"0001-01-01T00:00:00",
+                  "OrderCount":1,"OrderData":[{"OrderID":"14","OrderType":0,
+                  "VertexNumber":2347,"OpCount":0,"Operations":[],"OrderStatus":4,
+                  "OperateProgress":0,"OrderError":0,
+                  "OrderToken":"Home103150823441"}]},
+                  "amrTrafficMsg":{"CarrierId":1,"BlockState":0,"BlockSource":0,
+                  "BlockType":0,"BlockParam":0},
+                  "amrPlanMsg":{"CarrierId":1,"RecordTime":"0001-01-01T00:00:00",
+                  "PlanState":5,"PlanTargetNode":0,"PlanStartNode":0,
+                  "PlanCurrentNode":0,"DynamicPaths":[],"RequestedPaths":[],
+                  "LockedPaths":[],"RunningPaths":[]},
+                  "amrMotorMsg":{"CarrierId":1,"TotalMileage":0,"MotorCurrent1":0,
+                  "MotorCurrent2":0,"MotorCurrent3":0,"MotorCurren4":0,
+                  "MotorCurren5":0,"MotorCurren6":0,"MotorCurren7":0,
+                  "MotorCurren8":0,"MotorSpeed1":0,"MotorSpeed2":0,"MotorSpeed3":0,
+                  "MotorSpeed4":0,"MotorSpeed5":0,"MotorSpeed6":0,"MotorSpeed7":0,
+                  "MotorSpeed8":0,"MotorAlarm1":0,"MotorAlarm2":0,"MotorAlarm3":0,
+                  "MotorAlarm4":0,"MotorAlarm5":0,"MotorAlarm6":0,"MotorAlarm7":0,
+                  "MotorAlarm8":0},
+                  "amrScanMsg":{"CarrierId":1,"DataLength":0,"DataContent":[]}}
+                ResTime: "2026-01-03 15:21:09"
 
   /api/Amr/GetAmrMsgMPL:
     get:
@@ -341,6 +413,11 @@ paths:
       description: >
         Returns telemetry for every vehicle as a list of AmrMsgParam objects.
         Takes no parameters.
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "http://localhost:62205/api/Amr/GetAmrMsgMPL"
       responses:
         '200':
           description: Request completed — check `resCode` in the body for the real status
@@ -348,6 +425,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetAmrMsgMPLResponse'
+              example:
+                resCode: 0
+                resMsg: success
+                BizCode: GetAmrMsgMPL
+                resData: >-
+                  {"amrMsgList":[{"carrierId":1,"amrCurrentAlarms":
+                  {"AmrAlarmMsgList":[]},"amrBatteryMsg":{"CarrierId":1,
+                  "RecordTime":"0001-01-01T00:00:00","Alarm":0,"BatteryLevel":0.0,
+                  "ChargeCurrent":0,"ChargesCount":0,"DischargeCurrent":0,
+                  "Temperature":0,"Voltage":0},"amrConnectMsg":{"CarrierId":1,
+                  "CarrierStatus":0,"ConnectType":0,"ConnectState":1,
+                  "CarrierToken":0,"CarrierPassType":0,
+                  "DisconnectTime":"0001-01-01T00:00:00",
+                  "OfflineTime":"0001-01-01T00:00:00",
+                  "OnlineTime":"2026-01-03T13:32:08.62561+08:00"},
+                  "amrCoordinateMsg":{"Angle":-531,"CarrierId":1,
+                  "CoordinateX":212944.0,"CoordinateY":13533.0,"CoordinateZ":0.0,
+                  "RecordTime":"0001-01-01T00:00:00"},"amrLocationMsg":
+                  {"CarrierId":1,"Node":2347,"Path":0,
+                  "RecordTime":"0001-01-01T00:00:00"},"amrMapMsg":
+                  {"carrierId":1,"mapData":"","recordTime":"0001-01-01T00:00:00"},
+                  "amrSpeedMsg":{"CarrierId":1,"Vx":0,"Vy":0,"Vz":0,"Vw":0,
+                  "LineAcc":0.0,"LineDec":0.0,"RotationAcc":0.0,"RotationDec":0.0,
+                  "RecordTime":"0001-01-01T00:00:00"},"amrStatusMsg":
+                  {"CarrierId":1,"CarrierType":0,"ControlMode":1,"MotionType":255,
+                  "NavigationalState":2,"MotionState":0,"Signal1":0,"Signal2":0,
+                  "Signal3":0,"Signal4":0,"Signal5":0,"Signal6":0,"Signal7":0,
+                  "Signal8":0,"MechanismState":0,"MechanismHeight":0,
+                  "MechanismHeight2":0,"MechanismAngle":0,"ShelfNumber":0,
+                  "GoodsWeight":0,"SensorsCount":0,"SensorValues":[],
+                  "RecordTime":"2026-01-03T17:06:13.3386761+08:00"},
+                  "amrOrderMsg":{"CarrierId":1,"RecordTime":"0001-01-01T00:00:00",
+                  "OrderCount":1,"OrderData":[{"OrderID":"14","OrderType":0,
+                  "VertexNumber":2347,"OpCount":0,"Operations":[],
+                  "OrderStatus":4,"OperateProgress":0,"OrderError":0,
+                  "OrderToken":"Home103150823441"}]},"amrTrafficMsg":
+                  {"CarrierId":1,"BlockState":0,"BlockSource":0,"BlockType":0,
+                  "BlockParam":0},"amrPlanMsg":{"CarrierId":1,
+                  "RecordTime":"0001-01-01T00:00:00","PlanState":5,
+                  "PlanTargetNode":0,"PlanStartNode":0,"PlanCurrentNode":0,
+                  "DynamicPaths":[],"RequestedPaths":[],"LockedPaths":[],
+                  "RunningPaths":[]},"amrMotorMsg":{"CarrierId":1,
+                  "TotalMileage":0,"MotorCurrent1":0,"MotorCurrent2":0,
+                  "MotorCurrent3":0,"MotorCurren4":0,"MotorCurren5":0,
+                  "MotorCurren6":0,"MotorCurren7":0,"MotorCurren8":0,
+                  "MotorSpeed1":0,"MotorSpeed2":0,"MotorSpeed3":0,
+                  "MotorSpeed4":0,"MotorSpeed5":0,"MotorSpeed6":0,
+                  "MotorSpeed7":0,"MotorSpeed8":0,"MotorAlarm1":0,
+                  "MotorAlarm2":0,"MotorAlarm3":0,"MotorAlarm4":0,
+                  "MotorAlarm5":0,"MotorAlarm6":0,"MotorAlarm7":0,
+                  "MotorAlarm8":0},"amrScanMsg":{"CarrierId":1,"DataLength":0,
+                  "DataContent":[]}},{"carrierId":2,"amrCurrentAlarms":
+                  {"AmrAlarmMsgList":[]},"amrBatteryMsg":{"CarrierId":2,
+                  "RecordTime":"0001-01-01T00:00:00","Alarm":0,"BatteryLevel":0.0,
+                  "ChargeCurrent":0,"ChargesCount":0,"DischargeCurrent":0,
+                  "Temperature":0,"Voltage":0},"amrConnectMsg":{"CarrierId":2,
+                  "CarrierStatus":0,"ConnectType":0,"ConnectState":1,
+                  "CarrierToken":0,"CarrierPassType":1,
+                  "DisconnectTime":"0001-01-01T00:00:00",
+                  "OfflineTime":"0001-01-01T00:00:00",
+                  "OnlineTime":"2026-01-03T14:10:49.088089+08:00"},
+                  "amrCoordinateMsg":{"Angle":-139,"CarrierId":2,
+                  "CoordinateX":212943.0,"CoordinateY":15413.0,"CoordinateZ":0.0,
+                  "RecordTime":"0001-01-01T00:00:00"},"amrLocationMsg":
+                  {"CarrierId":2,"Node":2346,"Path":0,
+                  "RecordTime":"0001-01-01T00:00:00"},"amrMapMsg":
+                  {"carrierId":2,"mapData":"","recordTime":"0001-01-01T00:00:00"},
+                  "amrSpeedMsg":{"CarrierId":2,"Vx":0,"Vy":0,"Vz":0,"Vw":0,
+                  "LineAcc":0.0,"LineDec":0.0,"RotationAcc":0.0,"RotationDec":0.0,
+                  "RecordTime":"0001-01-01T00:00:00"},"amrStatusMsg":
+                  {"CarrierId":2,"CarrierType":0,"ControlMode":1,"MotionType":255,
+                  "NavigationalState":2,"MotionState":0,"Signal1":0,"Signal2":0,
+                  "Signal3":0,"Signal4":0,"Signal5":0,"Signal6":0,"Signal7":0,
+                  "Signal8":0,"MechanismState":0,"MechanismHeight":0,
+                  "MechanismHeight2":0,"MechanismAngle":0,"ShelfNumber":0,
+                  "GoodsWeight":0,"SensorsCount":0,"SensorValues":[],
+                  "RecordTime":"2026-01-03T17:06:13.3387065+08:00"},
+                  "amrOrderMsg":{"CarrierId":2,"RecordTime":"0001-01-01T00:00:00",
+                  "OrderCount":1,"OrderData":[{"OrderID":"11","OrderType":0,
+                  "VertexNumber":2346,"OpCount":0,"Operations":[],
+                  "OrderStatus":4,"OperateProgress":0,"OrderError":0,
+                  "OrderToken":"Home203150521345"}]},"amrTrafficMsg":
+                  {"CarrierId":2,"BlockState":0,"BlockSource":0,"BlockType":0,
+                  "BlockParam":0},"amrPlanMsg":{"CarrierId":2,
+                  "RecordTime":"0001-01-01T00:00:00","PlanState":5,
+                  "PlanTargetNode":0,"PlanStartNode":0,"PlanCurrentNode":0,
+                  "DynamicPaths":[],"RequestedPaths":[],"LockedPaths":[],
+                  "RunningPaths":[]},"amrMotorMsg":{"CarrierId":2,
+                  "TotalMileage":0,"MotorCurrent1":0,"MotorCurrent2":0,
+                  "MotorCurrent3":0,"MotorCurren4":0,"MotorCurren5":0,
+                  "MotorCurren6":0,"MotorCurren7":0,"MotorCurren8":0,
+                  "MotorSpeed1":0,"MotorSpeed2":0,"MotorSpeed3":0,
+                  "MotorSpeed4":0,"MotorSpeed5":0,"MotorSpeed6":0,
+                  "MotorSpeed7":0,"MotorSpeed8":0,"MotorAlarm1":0,
+                  "MotorAlarm2":0,"MotorAlarm3":0,"MotorAlarm4":0,
+                  "MotorAlarm5":0,"MotorAlarm6":0,"MotorAlarm7":0,
+                  "MotorAlarm8":0},"amrScanMsg":{"CarrierId":2,"DataLength":0,
+                  "DataContent":[]}}]}
+                ResTime: "2026-01-03 17:06:13"
 
 components:
   schemas:
