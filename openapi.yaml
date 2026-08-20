@@ -5,7 +5,7 @@ info:
     API for controlling and monitoring a fleet of AMR/AGV vehicles (Auto Tugger) —
     dispatching tasks to vehicles, monitoring vehicle telemetry, and managing the
     task lifecycle (create / cancel / query).
-    ##[See API Collection using Postman](https://github.com/AbdulRahmannnnnn/Auto_Tugger_API/blob/main/Auto%20Tugger%20API.postman_collection.json):
+    [See API Collection using Postman](https://github.com/AbdulRahmannnnnn/Auto_Tugger_API/blob/main/Auto%20Tugger%20API.postman_collection.json):
   version: "1.0.0"
 servers:
   - url: http://localhost:62205
@@ -119,12 +119,9 @@ paths:
             format: int32
             minimum: 0
             maximum: 65535
-          example: 1
-      x-codeSamples:
-        - lang: cURL
-          label: cURL
-          source: |
-            curl -X GET "http://localhost:62205/api/Amr/ReleaseAmr?carrierID=1"
+          example: 
+            "1"
+  
       responses:
         '200':
           description: Request completed — check `resCode` in the body for the real status
