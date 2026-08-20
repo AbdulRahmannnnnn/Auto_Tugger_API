@@ -1,0 +1,338 @@
+{
+  "info": {
+    "_postman_id": "5ddfb3f3-804b-40a9-9167-7906032fb447",
+    "name": "Auto Tugger API",
+    "description": "This is API for Auto Tugger",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32748575",
+    "_collection_link": "https://go.postman.co/collection/32748575-5ddfb3f3-804b-40a9-9167-7906032fb447?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "MoveAmrToStation",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"OrderID\": \"Abdul-{{$timestamp}}\",\r\n    \"Priority\": 0,\r\n    \"DesignatedCarrier\": 1, //number ID of AMR\r\n    \"TargetStation\": 72, //number of target point\r\n    \"Operations\": [\r\n        {\r\n            \"OperationCode\": 368, //368 --> to control towing, 16 to charging\r\n            \"Parameter1\": 0, // 1 to towing down and 2 to towing up\r\n            \"Parameter2\": 0,\r\n            \"Parameter3\": 0,\r\n            \"ExecutionType\": 1 //default\r\n        }\r\n    ],\r\n    \"PermanentFlag\": false\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.100.227:62205/api/Amr/MoveAmrToStation",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "100",
+            "227"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "MoveAmrToStation"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MoveAmrToNode",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoibGQiLCJuYmYiOiIxNzg3MTI3MTMxIiwiZXhwIjoiMTc4NzEyNzczMSIsImlzcyI6Imh0dHA6Ly9SQ1MuY29tIiwiYXVkIjoiaHR0cDovL1BNUy5jb20ifQ.eXpEpLPyYY0iq3jI-aBVXHYabxlPdnPzOdI8WVJXeRE",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"OrderID\": \"Abdul-{{$timestamp}}\",\r\n    \"Priority\": 0,\r\n    \"DesignatedCarrier\": 1, //number of AMR\r\n    \"TargetStation\": 72, //number of target point\r\n    \"Operations\": [\r\n        {\r\n            \"OperationCode\": 368, //368 --> to control towing, 16 to charging\r\n            \"Parameter1\": 0, // 1 to towing down and 2 to towing up\r\n            \"Parameter2\": 0,\r\n            \"Parameter3\": 0,\r\n            \"ExecutionType\": 1 //default\r\n        }\r\n    ],\r\n    \"PermanentFlag\": false\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.100.227:7066/api/Amr/MoveAmrToStation",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "100",
+            "227"
+          ],
+          "port": "7066",
+          "path": [
+            "api",
+            "Amr",
+            "MoveAmrToStation"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ReleaseAmr",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "1 //number of AMR",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.100.227:62205/api/Amr/ReleaseAmr",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "100",
+            "227"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "ReleaseAmr"
+          ]
+        },
+        "description": "just put number of AGV to release the car, example:\n\n1  \nthe car with ID number 1 will release if there are no task still running"
+      },
+      "response": []
+    },
+    {
+      "name": "GetOrderMsg",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "\"26010305\" //order id",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.100.227:62205/api/Amr/GetOrderMsg",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "100",
+            "227"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "GetOrderMsg"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetExecutingOrders",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "//none",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.78.134:62205/api/Amr/GetExecutingOrders",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "78",
+            "134"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "GetExecutingOrders"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "AddOrder",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"OrderID\":\"Abdul-{{$timestamp}}\",\"CarrierID\":1,\"CarrierType\":1,\"TargetNode\":7,\r\n\"TargetStation\":16,\"Priority\":1,\"Operations\": [{\"OperationCode\":368,\"Parameter1\":\r\n1,\"Parameter2\":0,\"Parameter3\":0,\"ExecutionType\":0}],\"ReplyUrl\":\"\",\r\n\"PermanentFlag\":true}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.78.134:62205/api/Amr/AddOrder",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "78",
+            "134"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "AddOrder"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CancelOrder",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"orderID\":\"26010308\",\"releaseFlag\":true} //true to make AMR go to parking point",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.78.134:62205/api/Amr/CancelOrder",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "78",
+            "134"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "CancelOrder"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetAmrMsg",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "1 //number ID of AMR",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.78.134:62205/api/Amr/GetAmrMsg",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "78",
+            "134"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "GetAmrMsg"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetAmrMsgMPL",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "//none",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://172.16.78.134:62205/api/Amr/GetAmrMsgMPL",
+          "protocol": "http",
+          "host": [
+            "172",
+            "16",
+            "78",
+            "134"
+          ],
+          "port": "62205",
+          "path": [
+            "api",
+            "Amr",
+            "GetAmrMsgMPL"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
